@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <fftw3.h>
 #include <math.h>
+#include <string.h>
 
 #define SIZE 1024
 
@@ -55,6 +56,8 @@ int main(int argc, char *argv[])
 		}
 	}
 	*/
+
+	//Main loop that does the fourier transform of the music data acquired so far. 
 	while(1) {
 		tempBuf = fgets(fileBuf, 100, fp);
 		if(tempBuf) {
@@ -65,22 +68,25 @@ int main(int argc, char *argv[])
 		}
 		i++;
 
-		if(i==1024 || tempBuf == NULL) {
+		if(i == SIZE || tempBuf == NULL) {
 			p = fftw_plan_dft_1d(i, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 			fftw_execute(p);
 
-			for(i = 0; i < 1024; i++) {
+			int tempVal = i;
+
+			for(i = 0; i < tempVal; i++) {
 				x = sqrt(out[i][0] * out[i][0] + out[i][1] * out[i][1]);
 				printf("Fourier: count: %d\t%f\n", i, x);
 			}
 
 			//resetting i;
 			i=0;
+			memset(in, 0, SIZE*sizeof(fftw_complex) );
+			memset(out, 0, SIZE*sizeof(fftw_complex) );
 			printf("Restarting the fourier loop\n");
 
 			if(!tempBuf)
 				break;
-			break;
 		}
 	}
 	printf("Ended file loop\n");
@@ -117,11 +123,6 @@ int main(int argc, char *argv[])
 	*/
 
 	fftw_destroy_plan(p);
-	/*fftw_free(in);
-	printf("in?\n");
-	fftw_free(out);
-	printf("out?\n");
-*/
 	fclose(fp);
 
 	return 0;

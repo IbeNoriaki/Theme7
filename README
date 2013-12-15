@@ -1,0 +1,16 @@
+*******************************************************************************
+PHYSICALLY BASED COMPUTER ANIMATION FINAL PROJECT
+******************************************************************************* 
+
+Things done so far:
+	- Convert .wav files into simple float amplitudes
+	- Figured out how to use FFTW to take the fourier transform of music 
+		data
+	
+Doing now:
+	- Taking the fourier transform of the entire piece of music
+	- Have to figure out how to space out the music input file
+
+Have to do:
+	- Have to figure out how to use the fourier transform data and append
+		the view with it.

@@ -34,12 +34,10 @@
 #include "ExecutableSimulation.h"
 #include "ParticleSimulation.h"
 
-#define MAXSAMPLERATE 1024
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //Adding the fourier transform shit that I need
-char *fileName = "range.dat";
+char *fileName = "ellie.dat";
 char fileBuf[100];
 FILE *fp;
 int sampleRate;
@@ -48,7 +46,6 @@ fftw_complex *out;
 fftw_plan p;
 int SIZE;
 bool fileFinished = false;
-double maxAvg = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Contains the actual simulation, renderer, parser, and serializer
@@ -322,11 +319,11 @@ void keyboard( unsigned char key, int x, int y )
   }
   else if( key == ' ' )
   {
-    //int x = fork();
-    //if(x==0) {
-    //  system("play range.dat");
-    //  exit(1);
-    //}
+  //  int x = fork();
+  //  if(x==0) {
+  //    system("play thermo.dat");
+  //    exit(1);
+  //  }
     g_paused = !g_paused;
   }
   else if( key == 'c' || key == 'C' )
@@ -571,6 +568,11 @@ void miscOutputFinalization()
   //g_debugoutput.close();
 }
 
+
+double scalingFn(double x) {
+  return (5.0)*x/(50.0);
+}
+
 // Called at the end of each timestep. Intended for adding effects to creative scenes.
 void sceneScriptingCallback()
 {
@@ -617,12 +619,9 @@ void sceneScriptingCallback()
     }
     avg/=temp;
     buckets[a] = avg;
-    if(avg>=maxAvg)
-      maxAvg = avg;
   //  std::cout << "Printing da buckets " << buckets[a] << std::endl;
   }
-//  std::cout << "Highest avg: " << maxAvg << std::endl;
-  if(g_scene_tag == "ShittyShitfuck") {
+  if(g_scene_tag == "Visualizer") {
      // Get the particle tags
     const std::vector<std::string>& tags = (*g_scene).getParticleTags();
     // Get the particle positions
@@ -645,6 +644,12 @@ void sceneScriptingCallback()
           x[2*i+1] = -3;
         }
       }
+      found = tempTag.find("spring");
+      if(found!=std::string::npos) {
+        int len = tempTag.length();
+        int num = tempTag[len - 1] - '0';
+        x[2*i+1]=scalingFn(buckets[num]);
+      }
     /*
       std::string tempTag = tags[i];
       std::size_t found = tempTag.find("bucket");
@@ -665,7 +670,6 @@ void sceneScriptingCallback()
   memset(in, 0, SIZE*sizeof(fftw_complex) );
   memset(out, 0, SIZE*sizeof(fftw_complex) );
 }
-
 int main( int argc, char** argv )
 {
   // Parse command line arguments

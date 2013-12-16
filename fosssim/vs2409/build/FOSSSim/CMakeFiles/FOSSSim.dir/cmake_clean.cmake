@@ -1,0 +1,43 @@
+FILE(REMOVE_RECURSE
+  "CMakeFiles/FOSSSim.dir/main.cpp.o"
+  "CMakeFiles/FOSSSim.dir/TimingUtilities.cpp.o"
+  "CMakeFiles/FOSSSim.dir/TwoDSceneSVGRenderer.cpp.o"
+  "CMakeFiles/FOSSSim.dir/TwoDSceneXMLParser.cpp.o"
+  "CMakeFiles/FOSSSim.dir/VortexForce.cpp.o"
+  "CMakeFiles/FOSSSim.dir/TwoDScene.cpp.o"
+  "CMakeFiles/FOSSSim.dir/LinearizedImplicitEuler.cpp.o"
+  "CMakeFiles/FOSSSim.dir/ConstantForce.cpp.o"
+  "CMakeFiles/FOSSSim.dir/ContinuousTimeUtilities.cpp.o"
+  "CMakeFiles/FOSSSim.dir/RenderingUtilities.cpp.o"
+  "CMakeFiles/FOSSSim.dir/GravitationalForce.cpp.o"
+  "CMakeFiles/FOSSSim.dir/HybridCollisionComparison.cpp.o"
+  "CMakeFiles/FOSSSim.dir/TwoDimensionalDisplayController.cpp.o"
+  "CMakeFiles/FOSSSim.dir/TwoDSceneSerializer.cpp.o"
+  "CMakeFiles/FOSSSim.dir/MathUtilities.cpp.o"
+  "CMakeFiles/FOSSSim.dir/YImage.cpp.o"
+  "CMakeFiles/FOSSSim.dir/ContinuousTimeCollisionHandler.cpp.o"
+  "CMakeFiles/FOSSSim.dir/TwoDSceneRenderer.cpp.o"
+  "CMakeFiles/FOSSSim.dir/PenaltyForce.cpp.o"
+  "CMakeFiles/FOSSSim.dir/TwoDSceneGrader.cpp.o"
+  "CMakeFiles/FOSSSim.dir/StringUtilities.cpp.o"
+  "CMakeFiles/FOSSSim.dir/SemiImplicitEuler.cpp.o"
+  "CMakeFiles/FOSSSim.dir/Force.cpp.o"
+  "CMakeFiles/FOSSSim.dir/ImplicitEuler.cpp.o"
+  "CMakeFiles/FOSSSim.dir/ExplicitEuler.cpp.o"
+  "CMakeFiles/FOSSSim.dir/HybridCollisionHandler.cpp.o"
+  "CMakeFiles/FOSSSim.dir/SimpleCollisionHandler.cpp.o"
+  "CMakeFiles/FOSSSim.dir/CollisionHandler.cpp.o"
+  "CMakeFiles/FOSSSim.dir/DragDampingForce.cpp.o"
+  "CMakeFiles/FOSSSim.dir/SpringForce.cpp.o"
+  "CMakeFiles/FOSSSim.dir/SimpleGravityForce.cpp.o"
+  "CMakeFiles/FOSSSim.dir/SceneStepper.cpp.o"
+  "CMakeFiles/FOSSSim.dir/RigidBodies/RigidBodyScene.cpp.o"
+  "CMakeFiles/FOSSSim.dir/RigidBodies/RigidBody.cpp.o"
+  "FOSSSim.pdb"
+  "FOSSSim"
+)
+
+# Per-language clean rules from dependency scanning.
+FOREACH(lang CXX)
+  INCLUDE(CMakeFiles/FOSSSim.dir/cmake_clean_${lang}.cmake OPTIONAL)
+ENDFOREACH(lang)

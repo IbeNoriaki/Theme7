@@ -4,17 +4,16 @@
 #include <math.h>
 #include <string.h>
 
-#define SIZE 1024
+#define SIZE 256
 
 int main(int argc, char *argv[])
 {
-	/*
 	if (argc < 2) {
 		printf("Must specify file name\n");
 		exit(EXIT_FAILURE);
 	}
-*/
-	char *fileName = "data/thermo.dat";
+
+	char *fileName = argv[1];
 	char fileBuf[100];
 	//File parsing bitches
 	FILE *fp = fopen(fileName, "r");
@@ -38,24 +37,6 @@ int main(int argc, char *argv[])
 	double x;
 	char *tempBuf;
 	double time, amplitude;
-	/*
-	while((tempBuf = fgets(fileBuf, 100, fp))!=NULL) {
-		for(i = 0; i < SIZE; i++) {
-			sscanf(fileBuf, "%*[ ]%lf%*[ ]%lf", &time, &amplitude);
-			printf("Double rec: count: %d %lf, %lf\n", i, time, amplitude);
-			in[i][0] = amplitude;
-			in[i][1] = 0;
-		}
-	
-		p = fftw_plan_dft_1d(i+1, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
-		fftw_execute(p);
-		for (i = 0; i < SIZE; i++) {
-			printf("Count: %d\t", i);
-			x = sqrt(out[i][0] * out[i][0] + out[i][1] * out[i][1]);
-			printf("Fourier: %f\n", x);
-		}
-	}
-	*/
 
 	//Main loop that does the fourier transform of the music data acquired so far. 
 	while(1) {

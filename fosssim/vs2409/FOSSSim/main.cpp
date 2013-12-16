@@ -3,6 +3,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fftw3.h>
+#include <math.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <tclap/CmdLine.h>
 
@@ -28,11 +34,24 @@
 #include "ExecutableSimulation.h"
 #include "ParticleSimulation.h"
 
+
+///////////////////////////////////////////////////////////////////////////////
+//Adding the fourier transform shit that I need
+char *fileName = "thermo.dat";
+char fileBuf[100];
+FILE *fp;
+int sampleRate;
+fftw_complex *in;
+fftw_complex *out;
+fftw_plan p;
+int SIZE;
+bool fileFinished = false;
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Contains the actual simulation, renderer, parser, and serializer
 ExecutableSimulation* g_executable_simulation;
 TwoDScene* g_scene;
-std::vector<renderingutils::Color> *pcolors;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rendering State
@@ -300,6 +319,11 @@ void keyboard( unsigned char key, int x, int y )
   }
   else if( key == ' ' )
   {
+    int x = fork();
+    if(x==0) {
+      system("play thermo.dat");
+      exit(1);
+    }
     g_paused = !g_paused;
   }
   else if( key == 'c' || key == 'C' )
@@ -547,6 +571,39 @@ void miscOutputFinalization()
 // Called at the end of each timestep. Intended for adding effects to creative scenes.
 void sceneScriptingCallback()
 {
+  //The fourier transform shit goes here
+  int i = 0;
+  double x;
+  char *tempBuf;
+  double tx, amplitude;
+  int tempVal = 0;
+
+  for(i = 0; i<SIZE; i++) {
+    tempBuf = fgets(fileBuf, 100, fp);
+    if(tempBuf) {
+      sscanf(fileBuf, "%*[ ]%lf%*[ ]%lf", &tx, &amplitude);
+      printf("Double: count: %d %lf, %lf\n", i, tx, amplitude);
+      in[i][0] = amplitude;
+      in[i][1] = 0;
+    } else {
+      fileFinished=true;
+      break;
+    }
+  }
+  if(!fileFinished) {
+    std::cout << "Printing the i: " << i << std::endl;
+    p = fftw_plan_dft_1d(i, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(p);
+    tempVal = i;
+  
+      for(i = 0; i < tempVal; i++) {
+            x = sqrt(out[i][0] * out[i][0] + out[i][1] * out[i][1]);
+            printf("Fourier: count: %d\t%f\n", i, x);
+    }
+  }
+  memset(in, 0, SIZE*sizeof(fftw_complex) );
+  memset(out, 0, SIZE*sizeof(fftw_complex) );
+
   if(g_scene_tag == "ShittyShitfuck") {
      // Get the particle tags
     const std::vector<std::string>& tags = (*g_scene).getParticleTags();
@@ -559,47 +616,39 @@ void sceneScriptingCallback()
     	v[2*i+1] = 1;
     }
   }
-//  // If the scene is one we wish to 'script'
-//  if( g_scene_tag == "ParticleFountain" )
-//  {
-//    // Get the particle tags
-//    const std::vector<std::string>& tags = g_scene.getParticleTags();
-//    // Get the particle positions
-//    VectorXs& x = g_scene.getX(); 
-//    // Get the particle velocities
-//    VectorXs& v = g_scene.getV();
-//    // Get the particle colors
-//    std::vector<renderingutils::Color>& pcolors = g_scene_renderer->getParticleColors();
-//
-//    // If any particles are tagged for teleportation and fall below -1.25
-//    for( std::vector<std::string>::size_type i = 0; i < tags.size(); ++i ) if( tags[i] == "teleport" && x(2*i+1) < -1.25 )
-//    {
-//      // Return this particle to the origin
-//      x.segment<2>(2*i).setZero();
-//      // Give this particle some random upward velocity
-//      double vx = 0.2*(((double)rand())/((double)RAND_MAX)-0.5);
-//      double vy = 0.15*((double)rand())/((double)RAND_MAX);
-//      v.segment<2>(2*i) << vx, vy;
-//      // Assign the particle a random color
-//      pcolors[i].r = ((double)rand())/((double)RAND_MAX);
-//      pcolors[i].g = ((double)rand())/((double)RAND_MAX);
-//      pcolors[i].b = ((double)rand())/((double)RAND_MAX);
-//    }
-//  }
 }
 
 int main( int argc, char** argv )
 {
   // Parse command line arguments
   parseCommandLine( argc, argv );
-  
+ 
   assert( !(g_save_to_binary && g_simulate_comparison) );
   
   // Function to cleanup at progarm exit
   atexit(cleanupAtExit);
 
+
   // Load the user-specified scene
   loadScene(g_xml_scene_file);
+
+  //Adding the file loading shit
+  fp = fopen(fileName, "r");
+  if(!fp) {
+    std::cout << "Music file not found\n";
+    return 0;
+  }
+  fscanf(fp, "; Sample Rate %d", &sampleRate);
+  std::cout << "Sample rate of music: " << sampleRate << std::endl;
+
+  SIZE = sampleRate * g_dt;
+  SIZE+=1;
+
+  fgets(fileBuf, 100, fp);
+  fgets(fileBuf, 100, fp);
+
+  in = (fftw_complex *)fftw_malloc(SIZE*sizeof(fftw_complex));
+  out = (fftw_complex *)fftw_malloc(SIZE*sizeof(fftw_complex));
 
   // If requested, open the binary output file
   if( g_save_to_binary )

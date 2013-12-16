@@ -18,6 +18,7 @@ add_definitions (-DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}")
 
 # Add warnings to the compiler flags
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused")
+set (CMAKE_EXE_LINKER_FLAGS "-lm -lfftw3")
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions (-DDEBUG -DEIGEN_DONT_ALIGN -DEIGEN_DONT_VECTORIZE)

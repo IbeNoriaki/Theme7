@@ -4,7 +4,7 @@
 #include <math.h>
 #include <string.h>
 
-#define SIZE 256
+#define SIZE 552
 
 int main(int argc, char *argv[])
 {
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 		tempBuf = fgets(fileBuf, 100, fp);
 		if(tempBuf) {
 			sscanf(fileBuf, "%*[ ]%lf%*[ ]%lf", &time, &amplitude);
-			printf("Double: count: %d %lf, %lf\n", i, time, amplitude);
+			//printf("Double: count: %d %lf, %lf\n", i, time, amplitude);
 			in[i][0] = amplitude;
 			in[i][1] = 0;
 		}
@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 		if(i == SIZE || tempBuf == NULL) {
 			p = fftw_plan_dft_1d(i, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 			fftw_execute(p);
+			fftw_destroy_plan(p);
 
 			int tempVal = i;
 
@@ -64,13 +65,14 @@ int main(int argc, char *argv[])
 			i=0;
 			memset(in, 0, SIZE*sizeof(fftw_complex) );
 			memset(out, 0, SIZE*sizeof(fftw_complex) );
-			printf("Restarting the fourier loop\n");
+			//printf("Restarting the fourier loop\n");
 
+			//printf("Destruction\n");
 			if(!tempBuf)
 				break;
 		}
 	}
-	printf("Ended file loop\n");
+	//printf("Ended file loop\n");
 	/*
 	while((tempBuf = fgets(fileBuf, 100, fp))!=NULL) {
 		printf("File: %s", fileBuf);
@@ -103,7 +105,6 @@ int main(int argc, char *argv[])
 	}
 	*/
 
-	fftw_destroy_plan(p);
 	fclose(fp);
 
 	return 0;

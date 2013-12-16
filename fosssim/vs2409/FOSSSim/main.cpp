@@ -34,10 +34,12 @@
 #include "ExecutableSimulation.h"
 #include "ParticleSimulation.h"
 
+#define MAXSAMPLERATE 1024
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //Adding the fourier transform shit that I need
-char *fileName = "thermo.dat";
+char *fileName = "range.dat";
 char fileBuf[100];
 FILE *fp;
 int sampleRate;
@@ -46,7 +48,7 @@ fftw_complex *out;
 fftw_plan p;
 int SIZE;
 bool fileFinished = false;
-
+double maxAvg = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Contains the actual simulation, renderer, parser, and serializer
@@ -165,6 +167,7 @@ void stepSystem()
 
   // Execute the user-customized scripting callback
   sceneScriptingCallback();
+
 }
 
 void syncScene()
@@ -319,11 +322,11 @@ void keyboard( unsigned char key, int x, int y )
   }
   else if( key == ' ' )
   {
-    int x = fork();
-    if(x==0) {
-      system("play thermo.dat");
-      exit(1);
-    }
+    //int x = fork();
+    //if(x==0) {
+    //  system("play range.dat");
+    //  exit(1);
+    //}
     g_paused = !g_paused;
   }
   else if( key == 'c' || key == 'C' )
@@ -582,7 +585,7 @@ void sceneScriptingCallback()
     tempBuf = fgets(fileBuf, 100, fp);
     if(tempBuf) {
       sscanf(fileBuf, "%*[ ]%lf%*[ ]%lf", &tx, &amplitude);
-      printf("Double: count: %d %lf, %lf\n", i, tx, amplitude);
+//      printf("Double: count: %d %lf, %lf\n", i, tx, amplitude);
       in[i][0] = amplitude;
       in[i][1] = 0;
     } else {
@@ -591,19 +594,34 @@ void sceneScriptingCallback()
     }
   }
   if(!fileFinished) {
-    std::cout << "Printing the i: " << i << std::endl;
     p = fftw_plan_dft_1d(i, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(p);
     tempVal = i;
   
       for(i = 0; i < tempVal; i++) {
             x = sqrt(out[i][0] * out[i][0] + out[i][1] * out[i][1]);
-            printf("Fourier: count: %d\t%f\n", i, x);
+        //    printf("Fourier: count: %d\t%f\n", i, x);
     }
+    fftw_destroy_plan(p);
   }
-  memset(in, 0, SIZE*sizeof(fftw_complex) );
-  memset(out, 0, SIZE*sizeof(fftw_complex) );
 
+
+  double buckets[10];
+  int temp = (SIZE/2)/10;
+  for(int a = 0; a < 10; a++) {
+    double avg = 0;
+    double t = (temp*a+temp<(SIZE/2))?temp*a+temp:(SIZE/2);
+    for(int b = temp*a; b<t; b++) {
+      x = sqrt(out[b][0] * out[b][0] + out[b][1] * out[b][1]);
+      avg+=x;
+    }
+    avg/=temp;
+    buckets[a] = avg;
+    if(avg>=maxAvg)
+      maxAvg = avg;
+  //  std::cout << "Printing da buckets " << buckets[a] << std::endl;
+  }
+//  std::cout << "Highest avg: " << maxAvg << std::endl;
   if(g_scene_tag == "ShittyShitfuck") {
      // Get the particle tags
     const std::vector<std::string>& tags = (*g_scene).getParticleTags();
@@ -613,9 +631,39 @@ void sceneScriptingCallback()
     VectorXs& v = (*g_scene).getV();
 
     for(int i = 0; i < tags.size(); i++) {
-    	v[2*i+1] = 1;
+    	//v[2*i+1] = 1;
+      std::string tempTag = tags[i];      //Parsing the tag:
+      std::size_t found = tempTag.find("mobile");
+      if(found!=std::string::npos) {
+        int len = tempTag.length();
+        int num = tempTag[len - 1] - '0';
+        if(buckets[num]<=1) {
+          x[2*i] = 100;
+          x[2*i+1] = 100;
+        } else {
+          x[2*i] = -2 + 0.5*num;
+          x[2*i+1] = -3;
+        }
+      }
+    /*
+      std::string tempTag = tags[i];
+      std::size_t found = tempTag.find("bucket");
+      if(found!=std::string::npos) {
+        int len = tempTag.length();
+        int num = tempTag[len-1]-'0';
+        if(v[2*i]>=buckets[num] || v[2*i+1]>=buckets[num]) {
+          v[2*i] -= buckets[num]*(rand()%10);
+          v[2*i+1] -= buckets[num]*(rand()%10);
+        } else {
+          v[2*i] += buckets[num]*(rand()%10);
+          v[2*i+1] += buckets[num]*(rand()%10);
+        }
+      }
+    */
     }
-  }
+  }   
+  memset(in, 0, SIZE*sizeof(fftw_complex) );
+  memset(out, 0, SIZE*sizeof(fftw_complex) );
 }
 
 int main( int argc, char** argv )
@@ -643,6 +691,10 @@ int main( int argc, char** argv )
 
   SIZE = sampleRate * g_dt;
   SIZE+=1;
+
+  //SIZE = (SIZE>MAXSAMPLERATE)?MAXSAMPLERATE:SIZE;
+
+  std::cout << "Sample size of fft: " << SIZE << std::endl;
 
   fgets(fileBuf, 100, fp);
   fgets(fileBuf, 100, fp);
@@ -708,6 +760,8 @@ int main( int argc, char** argv )
 
   if( g_rendering_enabled ) glutMainLoop();
   else headlessSimLoop();
+
+  fclose(fp);
 
   return 0;
 }
